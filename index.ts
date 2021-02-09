@@ -23,7 +23,7 @@ const addLabel = async (
   }
 
   const PRNumber = getPrNumber();
-  console.log(`Adding label ${label} to PR #${PRNumber}.`);
+  console.log(`DANNN Adding label ${label} to PR #${PRNumber}.`);
 
   try {
     await client.issues.addLabels({
