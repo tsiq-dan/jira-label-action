@@ -64,6 +64,58 @@ const fetchJIRAIssueType = async (
   }
 };
 
+const fetchJIRAIssueData = async (
+  ticketId: string,
+  jiraURL: string,
+  jiraUsername: string,
+  jiraToken: string,
+) => {
+  const options = {
+    method: 'GET',
+    url: `${jiraURL}/rest/api/3/issue/${ticketId}`,
+    auth: {
+      username: jiraUsername,
+      password: jiraToken,
+    },
+    headers: { Accept: 'application/json' },
+  };
+
+  try {
+    const result = await request(options);
+    const data = JSON.parse(result);
+    return data;
+  } catch (error) {
+    console.error(`Failed to fetch JIRA Issue with id ${ticketId}`);
+    throw (error);
+  }
+};
+
+const fetchJiraIssueDataType = async (
+  jiraData: json,
+) => {
+  try {
+    const data = JSON.parse(jiraData);
+    const type = data.fields.issuetype.name;
+    return type;
+  } catch (error) {
+    console.error(`Failed to fetch JIRA Issue type`);
+    throw (error);
+  }
+};
+
+const fetchJiraIssueDataLabels = async (
+  jiraData: json,
+) => {
+  try {
+    const data = JSON.parse(jiraData);
+    const labels = data.fields.labels;
+    return labels;
+  } catch (error) {
+    console.error(`Failed to fetch JIRA Issue type`);
+    throw (error);
+  }
+};
+
 const fetchContent = async (client: any, repoPath: string) => {
   const response = await client.repos.getContents({
     owner: github.context.repo.owner,
@@ -135,9 +187,16 @@ const run = async () => {
 
     // 4. Fetch ticket type from JIRA
     try {
-      const issueType = await fetchJIRAIssueType(ticketId, jiraURL, jiraUsername, jiraToken);
+      const jiraData = await fetchJIRAIssueData(ticketId, jiraURL, jiraUsername, jiraToken);
+      const issueType = await fetchJIRAIssueDataType(jiraData);
       // 5. Apply label according to ticket type
       addLabel(client, labelMappings, issueType);
+      // 6. If pm_review_required label, and not pm_approved, throw error
+      const labels = await fetchJiraIssueDataLabels(jiraData);
+      if (labels.includes("pm_review_required"))
+      {
+         console.log("includes pm_review_required label")
+      }
     } catch (error) {
       return;
     }
