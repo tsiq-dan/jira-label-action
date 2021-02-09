@@ -193,6 +193,7 @@ const run = async () => {
       addLabel(client, labelMappings, issueType);
       // 6. If pm_review_required label, and not pm_approved, throw error
       const labels = await fetchJiraIssueDataLabels(jiraData);
+      console.log("this is dan")
       if (labels.includes("pm_review_required"))
       {
          console.log("includes pm_review_required label")
